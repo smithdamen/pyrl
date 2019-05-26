@@ -1,9 +1,20 @@
 # IMPORT STATEMENTS
 print('# running imports')
+# import system files
 import tcod as libtcod
+print('# system files imported')
 
+# import engine files
+from src.entity import Entity
 from src.input_handlers import handle_keys
+from src.render_functions import clear_all, render_all
+from src.map import GameMap
+print('# engine files imported')
+
+# import data files
+print('# data files imported')
 print('# imports completed')
+
 
 # MAIN GAME LOOP
 print('# starting main')
@@ -11,38 +22,49 @@ def main():
     print('# initializing variables')
     screen_width = 120
     screen_height = 70
+    map_width = 80
+    map_height = 50
+
+    # eventually move these colors out to their own file in data/colors
+    colors = {
+            'dark_wall': libtcod.Color(0, 0, 100),
+            'dark_ground': libtcod.Color(50, 50, 150)
+            }
     print('# variables initialized')
 
-    # store player location and set to center of screen
-    player_x = int(screen_width / 2)
-    player_y = int(screen_height / 2)
+    # initialize entities
+    # TODO: possibly change '@' to a variable referenced from a symbols file
+    player = Entity(int(screen_width / 2), int(screen_height / 2), '@', libtcod.white)
+    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '@', libtcod.yellow)
+
+    # store list of entities
+    entities = [npc, player]
 
     # assign font
     libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
 
-    # variables to hold keyboard and mouse input
+    # variables holding key components for the engine
     key = libtcod.Key()
     mouse = libtcod.Mouse()
+    con = libtcod.console_new(screen_width, screen_height)
+    game_map = GameMap(map_width, map_height)
 
     # initialize root console
     libtcod.console_init_root(screen_width, screen_height, 'pyrl', False)
 
-    con = libtcod.console_new(screen_width, screen_height)
 
     # game loop
     while not libtcod.console_is_window_closed():
         # listen for input
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
-        # set variables for root console (console printing to, color)
-        libtcod.console_set_default_foreground(con, libtcod.white)
-        # (console printing to, x coord, y coord, symbol to use, background color)
-        libtcod.console_put_char(con, player_x, player_y, '@', libtcod.BKGND_NONE)
-        libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
-        # draws everything to screen
-        libtcod.console_flush()
-        # puts an empty space where the player used to be
-        libtcod.console_put_char(con, player_x, player_y, ' ', libtcod.BKGND_NONE)
 
+        # renders entities to the screen
+        render_all(con, entities, game_map, screen_width, screen_height, colors)
+
+        libtcod.console_flush()
+
+        # clears entities from screen when they move or are destroyed
+        clear_all(con, entities)
 
         # listen for keypresses
         action = handle_keys(key)
@@ -52,9 +74,8 @@ def main():
 
         if move:
             dx, dy = move
-            player_x += dx
-            player_y += dy
-
+            if not game_map.is_blocked(player.x + dx, player.y +dy):
+                player.move(dx, dy)
         if exit:
             return True
 
