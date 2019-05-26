@@ -24,6 +24,9 @@ def main():
     screen_height = 70
     map_width = 80
     map_height = 50
+    room_max_size = 10
+    room_min_size = 6
+    max_rooms = 30
 
     # eventually move these colors out to their own file in data/colors
     colors = {
@@ -34,8 +37,8 @@ def main():
 
     # initialize entities
     # TODO: possibly change '@' to a variable referenced from a symbols file
-    player = Entity(int(screen_width / 2), int(screen_height / 2), '@', libtcod.white)
-    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), '@', libtcod.yellow)
+    player = Entity(int(map_width / 2), int(map_height / 2), '@', libtcod.white)
+    npc = Entity(int(map_width / 2 - 5), int(map_height / 2), '@', libtcod.yellow)
 
     # store list of entities
     entities = [npc, player]
@@ -48,6 +51,7 @@ def main():
     mouse = libtcod.Mouse()
     con = libtcod.console_new(screen_width, screen_height)
     game_map = GameMap(map_width, map_height)
+    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player)
 
     # initialize root console
     libtcod.console_init_root(screen_width, screen_height, 'pyrl', False)
@@ -74,7 +78,7 @@ def main():
 
         if move:
             dx, dy = move
-            if not game_map.is_blocked(player.x + dx, player.y +dy):
+            if not game_map.is_blocked(player.x + dx, player.y + dy):
                 player.move(dx, dy)
         if exit:
             return True
