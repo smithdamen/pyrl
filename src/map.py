@@ -3,7 +3,10 @@ from random import randint
 from src.tile import Tile
 from src.entity import Entity
 from src.rectangle import Rect
+from src.ai import BasicMonster
+from src.fighter import Fighter
 from data.colors import Colors
+from src.render_functions import RenderOrder
 
 class GameMap:
     def __init__(self, width, height):
@@ -104,10 +107,14 @@ class GameMap:
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 # choose an entity to place based on percentage chance
                 if randint(0, 100) < 80:
-                    monster = Entity(x, y, 'o', Colors.green, 'orc', blocks=True)
+                    fighter_component = Fighter(hp=10, defense=2, power=3)
+                    ai_component = BasicMonster()
+                    monster = Entity(x, y, 'o', Colors.green, 'orc', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
 
                 else:
-                    monster = Entity(x, y, 'T', Colors.green, 'troll', blocks=True)
+                    fighter_component = Fighter(hp=15, defense=1, power=5)
+                    ai_component = BasicMonster()
+                    monster = Entity(x, y, 'T', Colors.green, 'troll', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
 
                 entities.append(monster)
 
