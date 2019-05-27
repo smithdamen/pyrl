@@ -9,7 +9,7 @@ class RenderOrder(Enum):
 
 # draws all the entities in the list
 # takes console, map, list of entities, width and height, and colors
-def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, colors):
+def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, colors):
     if fov_recompute:
         # draw tiles in game map
         # this will eventually be moved into individual map generator files
