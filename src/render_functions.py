@@ -1,6 +1,7 @@
 import tcod as libtcod
 from enum import Enum
 
+# tell the renderer what order to draw tiles in
 class RenderOrder(Enum):
     CORPSE = 1
     ITEM = 2
@@ -8,7 +9,7 @@ class RenderOrder(Enum):
 
 # draws all the entities in the list
 # takes console, map, list of entities, width and height, and colors
-def render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_width, screen_height, colors):
+def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, colors):
     if fov_recompute:
         # draw tiles in game map
         # this will eventually be moved into individual map generator files
@@ -41,12 +42,31 @@ def render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_w
     for entity in entities_in_render_order:
         draw_entity(con, entity, fov_map)
 
-    # draw temporary health bar
-    libtcod.console_set_default_foreground(con, libtcod.white)
-    libtcod.console_print_ex(con, 1, screen_height - 2, libtcod.BKGND_NONE, libtcod.LEFT,
-                         'HP: {0:02}/{1:02}'.format(player.fighter.hp, player.fighter.max_hp))
-
+    # blit main console to screen
     libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
+
+    # set up bars subconsole
+    libtcod.console_set_default_background(bars, libtcod.black)
+    libtcod.console_clear(bars)
+
+    render_bar(bars, 1, 1, bars_width, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.light_red, libtcod.darker_red)
+
+    # set up msgs subconsole
+    libtcod.console_set_default_background(msgs, libtcod.black)
+    libtcod.console_clear(msgs)
+
+    # print messages one line at a time
+    y = 1
+    for message in msg_log.messages:
+        libtcod.console_set_default_foreground(msgs, message.color)
+        libtcod.console_print_ex(msgs, msg_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)
+        y += 1
+
+    # blit bars console to screen
+    libtcod.console_blit(bars, 0, 0, bars_width, bars_height, 0, 0, bars_y)
+
+    # blit msgs console to screen
+    libtcod.console_blit(msgs, 0, 0, msg_width, msg_height, 0, 0, msg_y)
 
 # used to clear all entities after drawing to screen
 def clear_all(con, entities):
@@ -63,4 +83,23 @@ def draw_entity(con, entity, fov_map):
 # erases the character that represents this entity and makes it so it does not leave a trail when it moves
 def clear_entity(con, entity):
     libtcod.console_put_char(con, entity.x, entity.y, ' ', libtcod.BKGND_NONE)
+
+# create a bar to be put in the bars section of the window
+def render_bar(bars, x, y, total_width, name, value, maximum, bar_color, back_color):
+    bar_width = int(float(value) / maximum * total_width)
+
+    libtcod.console_set_default_background(bars, back_color)
+    libtcod.console_rect(bars, x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
+
+    libtcod.console_set_default_background(bars, bar_color)
+
+    if bar_width > 0:
+        libtcod.console_rect(bars, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
+
+    libtcod.console_set_default_foreground(bars, libtcod.white)
+    libtcod.console_print_ex(bars, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,
+            '{0}: {1}/{2}'.format(name, value, maximum))
+
+# create msgs window
+
 

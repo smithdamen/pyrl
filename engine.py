@@ -13,6 +13,7 @@ from src.fov import initialize_fov, recompute_fov
 from src.game_states import GameStates
 from src.fighter import Fighter
 from src.death import kill_monster, kill_player
+from src.messages import MessageLog
 print('# engine files imported')
 
 # import data files
@@ -40,6 +41,19 @@ def main():
     enemy_list_width = 40
     enemy_list_height = 50
 
+    # set positions of subconsoles
+    msg_x = 0
+    msg_y = 0
+    map_x = 0
+    map_y = msg_height + 1
+    bars_x = 0
+    bars_y = msg_height + map_height + 1
+    status_x = msg_width + 1
+    status_y = 0
+    enemy_list_x = msg_width + 1
+    enemy_list_y = status_height + 1
+
+    # dungeon variables
     room_max_size = 10
     room_min_size = 6
     max_rooms = 30
@@ -72,11 +86,16 @@ def main():
 
     # variables holding key components for the engine
     print('# initialize compoent variables')
+    # assign subconsoles and set dimensions
     con = libtcod.console_new(screen_width, screen_height)
+    bars = libtcod.console_new(bars_width, bars_height)
+    msgs = libtcod.console_new(msg_width, msg_height)
+
     game_map = GameMap(map_width, map_height)
     game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
     fov_recompute = True
     fov_map = initialize_fov(game_map)
+    msg_log = MessageLog(msg_x, msg_width, msg_height)
     key = libtcod.Key()
     mouse = libtcod.Mouse()
     game_state = GameStates.PLAYERS_TURN
@@ -96,7 +115,7 @@ def main():
             recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
         # renders entities to the screen
-        render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_width, screen_height, colors)
+        render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, colors)
 
         #after rendering, tell loop it no longer needs to recompute the FOV
         fov_recompute = False
@@ -147,7 +166,7 @@ def main():
             dead_entity = player_turn_result.get('dead')
 
             if message:
-                print(message)
+                msg_log.add_message(message)
 
             if dead_entity:
                 if dead_entity == player:
@@ -156,7 +175,7 @@ def main():
                 else:
                     message = kill_monster(dead_entity)
 
-                print(message)
+                msg_log.add_message(message)
 
         # handle the enemies turns
         if game_state == GameStates.ENEMY_TURN:
@@ -169,7 +188,7 @@ def main():
                         dead_entity = enemy_turn_result.get('dead')
 
                         if message:
-                            print(message)
+                            msg_log.add_message(message)
 
                         if dead_entity:
                             if dead_entity == player:
@@ -178,7 +197,7 @@ def main():
                             else:
                                 message = kill_monster(dead_entity)
 
-                            print(message)
+                            msg_log.add_message(message)
 
                             # break statement prevents the engine from changing the state back to player turn
                             if game_state == GameStates.PLAYER_DEAD:
