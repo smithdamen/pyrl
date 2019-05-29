@@ -9,7 +9,7 @@ class RenderOrder(Enum):
 
 # draws all the entities in the list
 # takes console, map, list of entities, width and height, and colors
-def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, colors):
+def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors):
     if fov_recompute:
         # draw tiles in game map
         # this will eventually be moved into individual map generator files
@@ -49,7 +49,13 @@ def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompu
     libtcod.console_set_default_background(bars, libtcod.black)
     libtcod.console_clear(bars)
 
+    # render the health bar
+    # TODO: add mana and stamina bars here
     render_bar(bars, 1, 1, bars_width, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.light_red, libtcod.darker_red)
+
+    # render names under the mouse and print to the bars subconsole
+    libtcod.console_set_default_foreground(bars, libtcod.light_gray)
+    libtcod.console_print_ex(bars, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, get_names_under_mouse(mouse, entities, fov_map))
 
     # set up msgs subconsole
     libtcod.console_set_default_background(msgs, libtcod.black)
@@ -83,6 +89,17 @@ def draw_entity(con, entity, fov_map):
 # erases the character that represents this entity and makes it so it does not leave a trail when it moves
 def clear_entity(con, entity):
     libtcod.console_put_char(con, entity.x, entity.y, ' ', libtcod.BKGND_NONE)
+
+# use the mouse to get tooltips
+def get_names_under_mouse(mouse, entities, fov_map):
+    (x, y) = (mouse.cx, mouse.cy)
+
+    names = [entity.name for entity in entities
+            if entity.x == x and entity.y == y and libtcod.map_is_in_fov(fov_map, entity.x, entity.y)]
+
+    names = ', '.join(names)
+
+    return names.capitalize()
 
 # create a bar to be put in the bars section of the window
 def render_bar(bars, x, y, total_width, name, value, maximum, bar_color, back_color):
