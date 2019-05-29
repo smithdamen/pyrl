@@ -88,6 +88,7 @@ def main():
     print('# initialize compoent variables')
     # assign subconsoles and set dimensions
     con = libtcod.console_new(screen_width, screen_height)
+    map = libtcod.console_new(map_width, map_height)
     bars = libtcod.console_new(bars_width, bars_height)
     msgs = libtcod.console_new(msg_width, msg_height)
 
@@ -115,7 +116,7 @@ def main():
             recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
         # renders entities to the screen
-        render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors)
+        render_all(con, map, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, map_x, map_y, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors)
 
         #after rendering, tell loop it no longer needs to recompute the FOV
         fov_recompute = False
