@@ -43,7 +43,7 @@ def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompu
         draw_entity(con, entity, fov_map)
 
     # blit main console to screen
-    libtcod.console_blit(con, 0, 0, map_width, map_height, map_x, map_y, 0)
+    libtcod.console_blit(con, 0, 0, map_width, map_height, 0, map_x, map_y)
 
     # set up bars subconsole
     libtcod.console_set_default_background(bars, libtcod.black)
