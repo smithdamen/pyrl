@@ -7,8 +7,7 @@ class RenderOrder(Enum):
     ITEM = 2
     ACTOR = 3
 
-# draws all the entities in the list
-# takes console, map, list of entities, width and height, and colors
+# main render function
 def render_all(con, map, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, map_x, map_y, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors):
     if fov_recompute:
         # draw tiles in game map

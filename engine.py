@@ -124,7 +124,7 @@ def main():
         libtcod.console_flush()
 
         # clears entities from screen when they move or are destroyed
-        clear_all(con, entities)
+        clear_all(map, entities)
 
         # listen for keypresses
         action = handle_keys(key)
