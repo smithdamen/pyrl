@@ -9,7 +9,7 @@ class RenderOrder(Enum):
 
 # draws all the entities in the list
 # takes console, map, list of entities, width and height, and colors
-def render_all(con, map, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, map_x, map_y, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors):
+def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors):
     if fov_recompute:
         # draw tiles in game map
         # this will eventually be moved into individual map generator files
@@ -21,10 +21,10 @@ def render_all(con, map, bars, msgs, entities, player, game_map, fov_map, fov_re
                 # tell the renderer what to draw if the tile is visible
                 if visible:
                     if wall:
-                        libtcod.console_put_char_ex(map, x, y, '#', colors.get('light_wall_fg'), colors.get('light_wall_bg'))
+                        libtcod.console_put_char_ex(con, x, y, '#', colors.get('light_wall_fg'), colors.get('light_wall_bg'))
 
                     else:
-                        libtcod.console_set_char_background(map, x, y, colors.get('light_ground'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x, y, colors.get('light_ground'), libtcod.BKGND_SET)
 
                     # set tile to explored once it's been seen
                     game_map.tiles[x][y].explored = True
@@ -33,17 +33,17 @@ def render_all(con, map, bars, msgs, entities, player, game_map, fov_map, fov_re
                 elif game_map.tiles[x][y].explored:
                     # assigns the symbol, colors, and positions of map tiles
                     if wall:
-                        libtcod.console_put_char_ex(map, x, y, '#', colors.get('dark_wall_fg'), colors.get('dark_wall_bg'))
+                        libtcod.console_put_char_ex(con, x, y, '#', colors.get('dark_wall_fg'), colors.get('dark_wall_bg'))
                     else:
-                        libtcod.console_set_char_background(map, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
+                        libtcod.console_set_char_background(con, x, y, colors.get('dark_ground'), libtcod.BKGND_SET)
 
     entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
 
     for entity in entities_in_render_order:
-        draw_entity(map, entity, fov_map)
+        draw_entity(con, entity, fov_map)
 
-    # blit map console to screen
-    libtcod.console_blit(map, 0, 0, map_width, map_height, con, map_x, map_y)
+    # blit main console to screen
+    libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
 
     # set up bars subconsole
     libtcod.console_set_default_background(bars, libtcod.black)
@@ -77,18 +77,18 @@ def render_all(con, map, bars, msgs, entities, player, game_map, fov_map, fov_re
 # used to clear all entities after drawing to screen
 def clear_all(con, entities):
     for entity in entities:
-        clear_entity(map, entity)
+        clear_entity(con, entity)
 
 # does the drawing of the entities to the screen
 # takes console, x and y coords, character, and color
-def draw_entity(map, entity, fov_map):
+def draw_entity(con, entity, fov_map):
     if libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
-        libtcod.console_set_default_foreground(map, entity.color)
-        libtcod.console_put_char(map, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
+        libtcod.console_set_default_foreground(con, entity.color)
+        libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
 
 # erases the character that represents this entity and makes it so it does not leave a trail when it moves
-def clear_entity(map, entity):
-    libtcod.console_put_char(map, entity.x, entity.y, ' ', libtcod.BKGND_NONE)
+def clear_entity(con, entity):
+    libtcod.console_put_char(con, entity.x, entity.y, ' ', libtcod.BKGND_NONE)
 
 # use the mouse to get tooltips
 def get_names_under_mouse(mouse, entities, fov_map):
@@ -116,3 +116,7 @@ def render_bar(bars, x, y, total_width, name, value, maximum, bar_color, back_co
     libtcod.console_set_default_foreground(bars, libtcod.white)
     libtcod.console_print_ex(bars, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,
             '{0}: {1}/{2}'.format(name, value, maximum))
+
+# create msgs window
+
+
