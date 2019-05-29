@@ -9,7 +9,7 @@ class RenderOrder(Enum):
 
 # draws all the entities in the list
 # takes console, map, list of entities, width and height, and colors
-def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, bars_width, bars_height, bars_y, msg_width, msg_height, msg_y, mouse, colors):
+def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, bars_width, bars_height, map_x, map_y, bars_y, msg_width, msg_height, msg_y, mouse, colors):
     if fov_recompute:
         # draw tiles in game map
         # this will eventually be moved into individual map generator files
@@ -43,7 +43,7 @@ def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompu
         draw_entity(con, entity, fov_map)
 
     # blit main console to screen
-    libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
+    libtcod.console_blit(con, 0, 0, map_width, map_height, map_x, map_y, 0)
 
     # set up bars subconsole
     libtcod.console_set_default_background(bars, libtcod.black)
@@ -116,7 +116,3 @@ def render_bar(bars, x, y, total_width, name, value, maximum, bar_color, back_co
     libtcod.console_set_default_foreground(bars, libtcod.white)
     libtcod.console_print_ex(bars, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,
             '{0}: {1}/{2}'.format(name, value, maximum))
-
-# create msgs window
-
-
