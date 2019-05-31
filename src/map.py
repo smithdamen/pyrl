@@ -7,6 +7,8 @@ from src.ai import BasicMonster
 from src.fighter import Fighter
 from data.colors import Colors
 from src.render_functions import RenderOrder
+from src.item import Item
+from src.item_functions import heal
 
 class GameMap:
     def __init__(self, width, height):
@@ -20,7 +22,7 @@ class GameMap:
 
         return tiles
 
-    def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room):
+    def make_map(self, max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room, max_items_per_room):
         rooms = []
         num_rooms = 0
 
@@ -70,7 +72,7 @@ class GameMap:
                         self.create_h_tunnel(prev_x, new_x, prev_y)
 
                 # place entities in rooms
-                self.place_entities(new_room, entities, max_monsters_per_room)
+                self.place_entities(new_room, entities, max_monsters_per_room, max_items_per_room)
 
                 # lastly, add the new room to the list of rooms
                 rooms.append(new_room)
@@ -95,15 +97,17 @@ class GameMap:
             self.tiles[x][y].block_sight = False
 
     # place entities in rooms
-    def place_entities(self, room, entities, max_monsters_per_room):
-        # get a random number of monsters
+    def place_entities(self, room, entities, max_monsters_per_room, max_items_per_room):
+        # get a random number of monsters and items
         number_of_monsters = randint(0, max_monsters_per_room)
+        number_of_items = randint(0, max_items_per_room)
 
         # select a random location in a room to place the monster
         for i in range(number_of_monsters):
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
 
+            # first check if space is eligible, then place monsters
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 # choose an entity to place based on percentage chance
                 if randint(0, 100) < 80:
@@ -117,6 +121,19 @@ class GameMap:
                     monster = Entity(x, y, 'T', Colors.green, 'troll', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
 
                 entities.append(monster)
+
+        # select a random location to place items
+        for i in range(number_of_items):
+            x = randint(room.x1 + 1, room.x2 - 1)
+            y = randint(room.y1 + 1, room.y2 - 1)
+
+            # check if space is available to place an item and if so, place it
+            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                item_component = Item(use_function=heal, amount=4)
+                # placeholder health potion item
+                item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM, item=item_component)
+
+                entities.append(item)
 
     def is_blocked(self, x, y):
         if self.tiles[x][y].blocked:

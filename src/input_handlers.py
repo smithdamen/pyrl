@@ -1,6 +1,20 @@
 import tcod as libtcod
+from src.game_states import GameStates
 
-def handle_keys(key):
+# main key handler
+def handle_keys(key, game_state):
+    if game_state == GameStates.PLAYERS_TURN:
+        return handle_player_turn_keys(key)
+
+    elif game_state == GameStates.PLAYER_DEAD:
+        return handle_player_dead_keys(key)
+
+    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+        return handle_inventory_keys(key)
+
+    return {}
+
+def handle_player_turn_keys(key):
     key_char = chr(key.c)
 
     # movement keys
@@ -21,6 +35,17 @@ def handle_keys(key):
     elif key_char == 'n':
         return {'move': (1, 1)}
 
+    # game controls
+    if key_char == 'g' or key_char == ',':
+        return {'pickup': True}
+
+    # toggle inventory
+    elif key_char == 'i':
+        return {'show_inventory': True}
+
+    elif key_char == 'd':
+        return {'drop_inventory': True}
+
     # toggle fullscreen
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         return {'fullscreen': True}
@@ -30,4 +55,28 @@ def handle_keys(key):
         return {'exit': True}
 
     # if no key was pressed
+    return {}
+
+def handle_player_dead_keys(key):
+    key_char = chr(key.c)
+
+    if key_char == 'i':
+        return {'show_inventory': True}
+    elif key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
+
+    return {}
+
+def handle_inventory_keys(key):
+    # turn the list of keys associated with items into an index starting with 'a'
+    index = key.c - ord('a')
+
+    if index >= 0:
+        return {'inventory_index': index}
+
+    if key.vk == libtcod.KEY_ENTER and key.lalt:
+        return {'fullscreen': True}
+    elif key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
+
     return {}

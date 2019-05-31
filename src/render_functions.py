@@ -1,5 +1,7 @@
 import tcod as libtcod
 from enum import Enum
+from src.game_states import GameStates
+from src.menus import inventory_menu
 
 # tell the renderer what order to draw tiles in
 class RenderOrder(Enum):
@@ -9,7 +11,7 @@ class RenderOrder(Enum):
 
 # draws all the entities in the list
 # takes console, map, list of entities, width and height, and colors
-def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, bars_width, bars_height, map_x, map_y, bars_y, msg_width, msg_height, msg_y, mouse, colors):
+def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, bars_width, bars_height, map_x, map_y, bars_y, msg_width, msg_height, msg_y, mouse, colors, game_state):
     if fov_recompute:
         # draw tiles in game map
         # this will eventually be moved into individual map generator files
@@ -73,6 +75,15 @@ def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompu
 
     # blit msgs console to screen
     libtcod.console_blit(msgs, 0, 0, msg_width, msg_height, 0, 0, msg_y)
+
+    # render inventory menu
+    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+        if game_state == GameStates.SHOW_INVENTORY:
+            inventory_title = 'Press key next to an item to use it.\n'
+        else:
+            inventory_title = 'Press key next to an item to drop it.\n'
+
+        inventory_menu(con, inventory_title, player.inventory, 50, screen_width, screen_height)
 
 # used to clear all entities after drawing to screen
 def clear_all(con, entities):
