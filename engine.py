@@ -42,6 +42,9 @@ def main():
     enemy_list_width = 40
     enemy_list_height = 50
 
+    # assign font
+    game_font = 'Potash-10x10.png'
+
     # set positions of subconsoles
     msg_x = 0
     msg_y = 0
@@ -86,7 +89,7 @@ def main():
     entities = [player]
 
     # assign font
-    libtcod.console_set_custom_font('fonts/terminal10x10_gs_tc.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+    libtcod.console_set_custom_font(game_font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_CP437)
 
     # variables holding key components for the engine
     print('# initialize compoent variables')
