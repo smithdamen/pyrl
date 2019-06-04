@@ -64,7 +64,7 @@ def render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompu
     libtcod.console_clear(msgs)
 
     # print messages one line at a time
-    y = 1
+    y = 0
     for message in msg_log.messages:
         libtcod.console_set_default_foreground(msgs, message.color)
         libtcod.console_print_ex(msgs, msg_log.x, y, libtcod.BKGND_NONE, libtcod.LEFT, message.text)

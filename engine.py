@@ -6,7 +6,7 @@ print('# system files imported')
 
 # import engine files
 from src.entity import Entity, get_blocking_entities_at_location
-from src.input_handlers import handle_keys
+from src.input_handlers import handle_keys, handle_mouse
 from src.render_functions import clear_all, render_all, RenderOrder
 from src.map import GameMap
 from src.fov import initialize_fov, recompute_fov
@@ -43,7 +43,7 @@ def main():
     enemy_list_height = 50
 
     # assign font
-    game_font = 'Potash-10x10.png'
+    game_font = 'fonts/Potash-10x10.png'
 
     # set positions of subconsoles
     msg_x = 0
@@ -65,7 +65,7 @@ def main():
     fov_light_walls = True
     fov_radius = 6
     max_monsters_per_room = 3
-    max_items_per_room = 1
+    max_items_per_room = 3
 
     # eventually move these colors out to their own file in data/colors
     colors = {
@@ -89,7 +89,8 @@ def main():
     entities = [player]
 
     # assign font
-    libtcod.console_set_custom_font(game_font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_CP437)
+    # libtcod.console_set_custom_font(game_font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_CP437)
+    libtcod.console_set_custom_font(game_font, libtcod.FONT_LAYOUT_CP437)
 
     # variables holding key components for the engine
     print('# initialize compoent variables')
@@ -107,6 +108,7 @@ def main():
     mouse = libtcod.Mouse()
     game_state = GameStates.PLAYERS_TURN
     previous_game_state = game_state
+    targeting_item = None
     print('# components initialized')
 
     # initialize root console
@@ -135,6 +137,9 @@ def main():
 
         # listen for keypresses
         action = handle_keys(key, game_state)
+        mouse_action = handle_mouse(mouse)
+        left_click = mouse_action.get('left_click')
+        right_click = mouse_action.get('right_click')
         move = action.get('move')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
@@ -192,14 +197,25 @@ def main():
             item = player.inventory.items[inventory_index]
 
             if game_state == GameStates.SHOW_INVENTORY:
-                player_turn_results.extend(player.inventory.use(item))
+                player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
+
+        # set up using the mouse for targeting
+        if game_state == GameStates.TARGETING:
+            if left_click:
+                target_x, target_y = left_click
+                item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map, target_x=target_x, target_y=target_y)
+                player_turn_results.extend(item_use_results)
+            elif right_click:
+                player_turn_results.append({'targeting_cancelled': True})
 
         # set game state back to player turn when closing a menu
         if exit:
             if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
                 game_state = previous_game_state
+            elif game_state == GameStates.TARGETING:
+                player_turn_results.append({'targeting_cancelled': True})
             else:
                 return True
 
@@ -214,6 +230,8 @@ def main():
             item_added = player_turn_result.get('item_added')
             item_consumed = player_turn_result.get('used')
             item_dropped = player_turn_result.get('item_dropped')
+            targeting = player_turn_result.get('targeting')
+            targeting_cancelled = player_turn_result.get('targeting_cancelled')
 
             if message:
                 msg_log.add_message(message)
@@ -237,6 +255,18 @@ def main():
             if item_dropped:
                 entities.append(item_dropped)
                 game_state = GameStates.ENEMY_TURN
+
+            if targeting:
+                previous_game_state = GameStates.PLAYERS_TURN
+                game_state = GameStates.TARGETING
+
+                targeting_item = targeting
+                message_log.add_message(targeting_item.item.targeting_message)
+
+            if targeting_cancelled:
+                game_state = previous_game_state
+
+                message_log.add_message(Message('Targeting cancelled.'))
 
         # handle the enemies turns
         if game_state == GameStates.ENEMY_TURN:
