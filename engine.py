@@ -180,7 +180,7 @@ def main():
 
                     break
             else:
-                message_log.add_message(Message('Nothing to pick up.', libtcod.yellow))
+                msg_log.add_message(Message('Nothing to pick up.', libtcod.yellow))
 
         # set game state when player shows inventory
         if show_inventory:
@@ -261,12 +261,12 @@ def main():
                 game_state = GameStates.TARGETING
 
                 targeting_item = targeting
-                message_log.add_message(targeting_item.item.targeting_message)
+                msg_log.add_message(targeting_item.item.targeting_message)
 
             if targeting_cancelled:
                 game_state = previous_game_state
 
-                message_log.add_message(Message('Targeting cancelled.'))
+                msg_log.add_message(Message('Targeting cancelled.'))
 
         # handle the enemies turns
         if game_state == GameStates.ENEMY_TURN:

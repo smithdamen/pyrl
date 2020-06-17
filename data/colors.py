@@ -17,5 +17,5 @@ class Colors:
     lightBlue = libtcod.Color(90, 150, 220)
     lightGreen = libtcod.Color(120, 200, 60)
     lightCyan = libtcod.Color(110, 190, 220)
-    lightRed = libtcod.Color(2550, 60, 0)
+    lightRed = libtcod.Color(255, 60, 0)
     lightMagenta = libtcod.Color(160, 100, 170)
