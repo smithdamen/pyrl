@@ -33,6 +33,7 @@ class Inventory:
         # print error if item cannot be used
         if item_component.use_function is None:
             results.append({'message': Message('The {0} cannot be used'.format(item_entity.name), libtcod.yellow)})
+            
         else:
             if item_component.targeting and not (kwargs.get('target_x') or kwargs.get('target_y')):
                 results.append({'targeting': item_entity})
@@ -44,8 +45,8 @@ class Inventory:
                 for item_use_result in item_use_results:
                     if item_use_result.get('used'):
                         self.remove_item(item_entity)
-
-                    results.extend(item_use_results)
+                    
+                results.extend(item_use_results)
 
         return results
 

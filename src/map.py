@@ -8,7 +8,7 @@ from src.fighter import Fighter
 from data.colors import Colors
 from src.render_functions import RenderOrder
 from src.item import Item
-from src.item_functions import heal, cast_lightning, cast_fireball
+from src.item_functions import heal, cast_lightning, cast_fireball, cast_confuse
 from src.messages import Message
 
 class GameMap:
@@ -137,14 +137,19 @@ class GameMap:
                     # placeholder health potion item
                     item = Entity(x, y, '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM, item=item_component)
 
-                elif item_chance < 85:
+                elif item_chance < 80:
                     item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message('Left-click a target tile for the fireball, or right-click to cancel.', libtcod.light_cyan), damage=12, radius=3)
                     item = Entity(x, y, '?', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM, item=item_component)
+                
+                elif item_chance < 90:
+                    item_component = Item(use_function=cast_confuse, targeting=True, targeting_message=Message('Left-click an enemy to confuse it, or right-click to cancel.', libtcod.light_cyan))
+                    item = Entity(x, y, '?', libtcod.light_pink, 'Confusion Scroll', render_order=RenderOrder.ITEM, item=item_component)
+
                 else:
                     item_component = Item(use_function=cast_lightning, damage=20, maximum_range=5)
                     item = Entity(x, y, '?', libtcod.yellow, 'Lightning Scroll', render_order=RenderOrder.ITEM, item=item_component)
 
-                entities.append(item)
+            entities.append(item)
 
     def is_blocked(self, x, y):
         if self.tiles[x][y].blocked:
