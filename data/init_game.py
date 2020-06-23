@@ -13,7 +13,7 @@ def get_constants():
 
     # set dimensions of consoles
     screen_width = 120
-    screen_height 70
+    screen_height = 70
     map_width = 80
     map_height = 50
     msg_width = 80
@@ -75,6 +75,7 @@ def get_constants():
             'status_height': status_height,
             'enemy_list_width': enemy_list_width,
             'enemy_list_height': enemy_list_height,
+            'game_font': game_font,
             'msg_x': msg_x,
             'msg_y': msg_y,
             'map_x': map_x,
