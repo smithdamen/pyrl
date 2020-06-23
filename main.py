@@ -5,20 +5,18 @@ import tcod as libtcod
 print('# system files imported')
 
 # import engine files
-from src.entity import Entity, get_blocking_entities_at_location
+from src.entity import get_blocking_entities_at_location
 from src.input_handlers import handle_keys, handle_mouse
-from src.render_functions import clear_all, render_all, RenderOrder
-from src.map import GameMap
+from src.render_functions import clear_all, render_all 
 from src.fov import initialize_fov, recompute_fov
 from src.game_states import GameStates
-from src.fighter import Fighter
 from src.death import kill_monster, kill_player
-from src.messages import Message, MessageLog
-from src.inventory import Inventory
+from src.messages import Message
 print('# engine files imported')
 
 # import data files
 from data.colors import Colors
+from data.init_game import get_constants, get_game_variables
 print('# data files imported')
 
 print('# imports completed')
@@ -27,93 +25,35 @@ print('# imports completed')
 # MAIN GAME LOOP
 print('# starting main')
 def main():
+    # import game data and set variables
     print('# initializing variables')
-    # set dimensions of main window and subconsoles
-    screen_width = 120
-    screen_height = 70
-    map_width = 80
-    map_height = 50
-    msg_width = 80
-    msg_height = 15
-    bars_width = 80
-    bars_height = 5
-    status_width = 40
-    status_height = 20
-    enemy_list_width = 40
-    enemy_list_height = 50
-
-    # assign font
-    game_font = 'fonts/Potash-10x10.png'
-
-    # set positions of subconsoles
-    msg_x = 0
-    msg_y = 0
-    map_x = 0
-    map_y = msg_height + 1
-    bars_x = 0
-    bars_y = msg_height + map_height + 1
-    status_x = msg_width + 1
-    status_y = 0
-    enemy_list_x = msg_width + 1
-    enemy_list_y = status_height + 1
-
-    # dungeon variables
-    room_max_size = 10
-    room_min_size = 6
-    max_rooms = 30
-    fov_algorithm = 0
-    fov_light_walls = True
-    fov_radius = 6
-    max_monsters_per_room = 3
-    max_items_per_room = 3
-
-    # eventually move these colors out to their own file in data/colors
-    colors = {
-            'dark_wall_fg': Colors.black,
-            'dark_wall_bg': Colors.darkGray,
-            'dark_ground': Colors.darkGray,
-            'light_wall_fg': Colors.black,
-            'light_wall_bg': Colors.lightGray,
-            'light_ground': Colors.lightGray
-            }
+    constants = get_constants()
     print('# variables initialized')
 
-    # initialize all components
-    # TODO: possibly change '@' to a variable referenced from a symbols file
-    fighter_component = Fighter(hp=30, defense=2, power=5)
-    # change inveotory system to be based on weight instead of max number of items in the future
-    inventory_component = Inventory(26)
-    player = Entity(0, 0, '@', Colors.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, inventory=inventory_component)
-
-    # store list of entities
-    entities = [player]
 
     # assign font
-    # libtcod.console_set_custom_font(game_font, libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_CP437)
-    libtcod.console_set_custom_font(game_font, libtcod.FONT_LAYOUT_CP437)
+    libtcod.console_set_custom_font(constants['game_font'], libtcod.FONT_LAYOUT_CP437)
+
+    # initialize root console
+    libtcod.console_init_root(constants['screen_width'], constants['screen_height'], constants['window_title']. False)
 
     # variables holding key components for the engine
     print('# initialize compoent variables')
     # assign subconsoles and set dimensions
-    con = libtcod.console_new(map_width, map_height)
-    bars = libtcod.console_new(bars_width, bars_height)
-    msgs = libtcod.console_new(msg_width, msg_height)
+    con = libtcod.console_new(constants['map_width'], constants['map_height'])
+    bars = libtcod.console_new(constants['bars_width'], constants['bars_height'])
+    msgs = libtcod.console_new(constants['msg_width'], constants['msg_height'])
 
-    game_map = GameMap(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room, max_items_per_room)
+    # import components from 'data/init_game.py'
+    player, entities, game_map, msg_log, game_state = get_game_variables(constants)
+
     fov_recompute = True
     fov_map = initialize_fov(game_map)
-    msg_log = MessageLog(msg_x, msg_width, msg_height)
     key = libtcod.Key()
     mouse = libtcod.Mouse()
-    game_state = GameStates.PLAYERS_TURN
     previous_game_state = game_state
     targeting_item = None
     print('# components initialized')
-
-    # initialize root console
-    libtcod.console_init_root(screen_width, screen_height, 'pyrl', False)
-
 
     # game loop
     while not libtcod.console_is_window_closed():
@@ -122,10 +62,10 @@ def main():
 
         # check if the fov needs to be updated
         if fov_recompute:
-            recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
+            recompute_fov(fov_map, player.x, player.y, constants['fov_radius'], constants['fov_light_walls'], constants['fov_algorithm'])
 
         # renders entities to the screen
-        render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, screen_width, screen_height, map_width, map_height, bars_width, bars_height, map_x, map_y, bars_y, msg_width, msg_height, msg_y, mouse, colors, game_state)
+        render_all(con, bars, msgs, entities, player, game_map, fov_map, fov_recompute, msg_log, constants['screen_width'], constants['screen_height'], constants['map_width'], constants['map_height'], constants['bars_width'], constants['bars_height'], constants['map_x'], constants['map_y'], constants['bars_y'], constants['msg_width'], constants['msg_height'], constants['msg_y'], mouse, constants['colors'], game_state)
 
         #after rendering, tell loop it no longer needs to recompute the FOV
         fov_recompute = False
